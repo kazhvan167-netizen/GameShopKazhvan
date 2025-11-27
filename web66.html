@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فروشگاه بازی | نمونه اولیه فرانت‌اند</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Setup */
+        :root { --primary: #8e44ad; --secondary: #00cec9; --bg: #1e272e; --card-bg: #2d3436; --text: #ecf0f1; --danger: #ff7675; --success: #00b894; --warning: #f1c40f; --info: #3498db; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+        
+        /* Header & Navigation */
+        header { background-color: #000; padding: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; color: var(--secondary); font-weight: bold; }
+        
+        /* Main Navigation Buttons */
+        nav button { background: none; border: none; color: #aaa; font-size: 1rem; margin: 0 10px; cursor: pointer; transition: 0.3s; padding: 5px 10px; }
+        nav button.active, nav button:hover { color: var(--secondary); border-bottom: 2px solid var(--secondary); }
+        .cart-badge { background-color: var(--danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.8rem; vertical-align: top; }
+
+        /* User Menu */
+        .user-menu-container { position: relative; display: inline-block; }
+        .user-dropdown { position: absolute; top: 40px; left: 0; right: auto; background-color: var(--card-bg); border: 1px solid var(--primary); border-radius: 5px; min-width: 150px; z-index: 200; box-shadow: 0 4px 8px rgba(0,0,0,0.5); display: none; padding: 5px 0; text-align: right; }
+        .user-dropdown.show { display: block; }
+        .user-dropdown button { display: block; width: 100%; padding: 10px 15px; text-align: right; background: none; border: none; color: var(--text); cursor: pointer; }
+        .user-dropdown button:hover { background-color: #3e4449; }
+        
+        /* Sections & Grid */
+        .container { max-width: 1100px; margin: 30px auto; padding: 0 20px; }
+        .section { display: none; animation: fadeIn 0.5s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+
+        /* Product Cards */
+        .card { background-color: var(--card-bg); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+        .card img { width: 100%; height: 180px; object-fit: cover; }
+        .card-body { padding: 15px; }
+        .card-title { font-size: 1.1rem; margin-bottom: 10px; font-weight: bold; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .price-new { color: var(--success); font-size: 1.2rem; font-weight: bold; }
+        .price-old { color: #777; text-decoration: line-through; font-size: 0.9rem; }
+
+        /* Product Specs List */
+        .specs-list { list-style: none; padding: 0; margin-top: 10px; border-top: 1px solid #444; padding-top: 10px; }
+        .specs-list li { background-color: #3e4449; padding: 5px 10px; border-radius: 3px; margin-bottom: 5px; font-size: 0.9em; }
+
+        /* Category Menu */
+        .category-menu { margin-bottom: 20px; text-align: center; }
+        .category-menu button { background-color: #333; color: var(--text); border: none; padding: 8px 15px; margin: 0 5px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+        .category-menu button:hover { background-color: #444; }
+        .category-menu button.active { background-color: var(--primary); }
+
+        /* Forms & Inputs */
+        .form-box { background: var(--card-bg); padding: 30px; border-radius: 10px; max-width: 500px; margin: 0 auto; border: 1px solid var(--primary); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; color: #bdc3c7; text-align: right; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background: #111; border: 1px solid #555; color: white; border-radius: 5px; text-align: right; direction: rtl; } 
+        .error-message { color: var(--danger); text-align: center; margin-bottom: 15px; font-weight: bold; display: none; }
+        
+        /* Payment Info Box */
+        .payment-info { background: #3c3f41; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed var(--secondary); text-align: right; }
+        .payment-info h4 { margin-top: 0; color: var(--secondary); }
+
+        /* Buttons & Footer */
+        .btn { width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-add { background-color: var(--primary); color: white; }
+        .btn-add:hover { background-color: #9b59b6; }
+        .btn-del { background-color: var(--danger); color: white; margin-top: 5px; }
+        .btn-edit { background-color: var(--info); color: white; margin-top: 5px; margin-right: 5px; }
+        .btn-link { background: none; color: var(--secondary); border: none; cursor: pointer; text-align: center; display: block; width: 100%; margin-top: 10px; }
+        .btn-cancel { background-color: var(--danger); color: white; margin-top: 10px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-password { background-color: #2ecc71; color: white; margin-top: 10px; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;}
+        .btn-admin-action { 
+            background-color: var(--warning); 
+            color: #1e272e; 
+            margin-top: 15px; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        footer { text-align: center; margin-top: 50px; padding: 20px; border-top: 1px solid #333; color: #777; }
+
+        /* Order Summary Card (Admin & User) */
+        .order-summary { 
+            background-color: #3c3f41; padding: 15px; border-radius: 8px; margin-bottom: 15px; direction: rtl; text-align: right; 
+            border-right: 5px solid; 
+        }
+        .order-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .order-details { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #555; display: none; }
+        .order-details.show { display: block; }
+        .order-details p { margin-bottom: 8px; font-size: 0.95em; }
+        .item-list { list-style: disc; margin-right: 20px; padding-right: 0; }
+        
+        /* Profile Info Box */
+        .profile-info-box {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid var(--secondary);
+            text-align: right;
+        }
+        .profile-info-box h3 {
+            color: var(--primary);
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .profile-info-box p {
+            padding: 5px 0;
+            line-height: 1.6;
+        }
+
+        /* Search Input */
+        .search-container { margin-bottom: 20px; max-width: 500px; margin: 0 auto 20px auto; }
+        .search-container input { background: #333; border: 1px solid #555; padding: 10px; border-radius: 5px; color: white; width: 100%; text-align: right; }
+
+        /* Modal/Popup styles for editing */
+        .modal { display: none; position: fixed; z-index: 500; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); padding-top: 60px; }
+        .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 20px; border: 1px solid var(--primary); width: 80%; max-width: 500px; border-radius: 10px; text-align: right; }
+        .close-btn { color: #aaa; float: left; font-size: 28px; font-weight: bold; }
+        .close-btn:hover, .close-btn:focus { color: var(--danger); text-decoration: none; cursor: pointer; }
+        .modal-title { color: var(--secondary); margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+
+        /* Cart Shipping Cost */
+        .shipping-cost-row { 
+            display: flex; justify-content: space-between; padding: 10px; 
+            border-top: 1px solid #444; margin-top: 10px; font-style: italic; color: var(--info);
+        }
+
+        /* Cancellation Alert */
+        .cancellation-alert {
+            background-color: #4d2b2b;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        /* User Management Table Styles */
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            text-align: right;
+        }
+        .user-table th, .user-table td {
+            padding: 12px 15px;
+            border: 1px solid #444;
+        }
+        .user-table th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+        .user-table td {
+            background-color: var(--card-bg);
+            vertical-align: middle;
+        }
+        .user-table td:nth-child(2) {
+            text-align: center; /* Center for password visibility */
+        }
+        .user-table .btn-password {
+            width: auto;
+            margin: 0;
+            padding: 5px 10px;
+        }
+
+
+        /* Styling adjustments for RTL */
+        .container h2 { text-align: right; }
+        .form-group label { text-align: right; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group input[type="tel"], .form-group input[type="password"], .form-group textarea { direction: rtl; text-align: right; }
+        .user-dropdown { right: 0; left: auto; }
+        
+        /* Category Management List */
+        .category-list { list-style: none; padding: 0; max-width: 300px; margin: 15px auto; }
+        .category-list li { background-color: #3e4449; padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .category-list button { background-color: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 0.8em; }
+        
+
+        
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo"><i class="fas fa-gamepad"></i> فروشگاه گیم</div>
+        <nav>
+            <button onclick="switchTab('shop')" id="tab-shop" class="active"><i class="fas fa-store"></i> محصولات</button>
+            <button onclick="switchTab('cart')" id="tab-cart"><i class="fas fa-shopping-cart"></i> سبد خرید <span id="cart-count" class="cart-badge">0</span></button>
+            <button onclick="switchTab('about')" id="tab-about"><i class="fas fa-info-circle"></i> درباره ما</button>
+            <span id="user-auth-area"></span>
+        </nav>
+    </header>
+
+    <div class="container">
+        
+        <div id="shop" class="section active">
+            <h2 style="margin-bottom: 20px;">جدیدترین محصولات</h2>
+            
+            <div class="search-container">
+                <input type="text" id="product-search-input" oninput="renderShop()" placeholder="جستجو بر اساس نام محصول..." />
+            </div>
+
+            <div class="category-menu" id="category-menu"></div>
+            <div class="grid" id="product-grid"></div>
+        </div>
+
+        <div id="cart" class="section">
+            <h2 style="margin-bottom: 20px;">سبد خرید شما</h2>
+            <div id="cart-items"></div>
+            <div class="shipping-cost-row">
+                <span>هزینه ارسال:</span>
+                <span id="shipping-cost-display"></span>
+            </div>
+            <div class="cart-total" id="cart-total">جمع کل نهایی: ۰ تومان</div>
+            <button class="btn btn-add" style="margin-top: 20px;" onclick="goToShipping()">نهایی کردن خرید</button>
+        </div>
+
+        <div id="about" class="section">
+            <h2 style="margin-bottom: 20px; text-align: center;">درباره فروشگاه ما</h2>
+            <div class="form-box" style="max-width: none;">
+                <p style="text-align: right; margin-bottom: 20px; line-height: 1.8;">
+                    ما یک فروشگاه آنلاین تخصصی در زمینه کنسول‌های بازی و لوازم جانبی هستیم. هدف ما ارائه بهترین محصولات با قیمت رقابتی و تضمین اصالت کالا است.
+                </p>
+                <h3 style="text-align: right; color: var(--primary);">اطلاعات تماس:</h3>
+                <p style="text-align: right;">
+                    <i class="fas fa-phone-alt"></i> **شماره تماس:** ۰۹۱۸۲۴۳۳۵۰۷
+                </p>
+                <p style="text-align: right;">
+                    <i class="fas fa-map-marker-alt"></i> **آدرس:** کردستان، سنندج
+                </p>
+            </div>
+        </div>
+
+        <div id="login" class="section">
+            <h2 style="text-align: center; margin-bottom: 20px;">ورود کاربر</h2>
+            <div class="form-box">
+                <div id="login-error" class="error-message">نام کاربری یا رمز عبور اشتباه است!</div>
+                <form onsubmit="handleUserLogin(event)">
+                    <div class="form-group">
+                        <label>نام کاربری (ادمین: superuser):</label>
+                        <input type="text" id="user-login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>رمز عبور:</label>
+                        <input type="password" id="user-login-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-add">ورود</button>
+                    <button type="button" class="btn-link" onclick="switchTab('register')">حساب کاربری ندارید؟ ثبت نام کنید</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="register" class="section">
+            <h2 style="text-align: center; margin-bottom: 20px;">ایجاد حساب کاربری</h2>
+            <div class="form-box">
+                <div id="register-error" class="error-message"></div>
+                <form onsubmit="handleUserRegister(event)">
+                    <div class="form-group">
+                        <label>نام کاربری:</label>
+                        <input type="text" id="user-reg-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>رمز عبور:</label>
+                        <input type="password" id="user-reg-password" required>
+                    </div>
+                    <button type="submit" class="btn btn-add">ثبت نام</button>
+                    <button type="button" class="btn-link" onclick="switchTab('login')">قبلاً ثبت نام کرده‌اید؟ وارد شوید</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="shipping" class="section">
+            <h2 style="text-align: center; margin-bottom: 20px;">📝 اطلاعات ارسال و پرداخت</h2>
+            <div class="form-box">
+
+                <div class="payment-info" style="border: 1px solid var(--primary);">
+                    <h4><i class="fas fa-money-bill-wave"></i> مبلغ نهایی قابل پرداخت:</h4>
+                    <p id="final-total-display" style="font-size: 1.5em; font-weight: bold; color: var(--success);">
+                        </p>
+                </div>
+                
+                <div class="payment-info">
+                    <h4><i class="fas fa-university"></i> شماره کارت مقصد برای واریز:</h4>
+                    <p style="font-size: 1.2em; font-weight: bold; color: var(--text);">
+                        ۱۲۰۴ **** **** ۱۳۹۸
+                    </p>
+                    <p style="font-size: 0.9em; color: #ccc;">
+                        **توجه:** مبلغ کل نهایی (شامل هزینه ارسال) را به این شماره کارت واریز نمایید.
+                    </p>
+                </div>
+
+                <form onsubmit="submitShippingForm(event)">
+                    <div class="form-group"><label>نام گیرنده:</label><input type="text" id="ship-name" required></div>
+                    <div class="form-group"><label>شماره تماس:</label><input type="tel" id="ship-phone" required></div>
+                    <div class="form-group"><label>آدرس کامل:</label><input type="text" id="ship-address" required></div>
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <input type="number" id="ship-plaque" placeholder="پلاک" required>
+                        <input type="text" id="ship-postal" placeholder="کد پستی" required>
+                    </div>
+                    
+                    <hr style="border-color: #555; margin: 20px 0;">
+
+                    <div class="form-group">
+                        <label>نام صاحب کارت واریزی (جهت تأیید):</label>
+                        <input type="text" id="payment-owner-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>۴ رقم آخر کارت واریزی (جهت تأیید):</label>
+                        <input type="text" id="payment-last-digits" maxlength="4" pattern="\d{4}" title="باید دقیقاً ۴ رقم باشد" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-add">ثبت سفارش نهایی</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="user-orders" class="section">
+            <h2 style="text-align: center; margin-bottom: 20px;">سفارشات من</h2>
+            <div id="user-orders-list"></div>
+        </div>
+        
+        <div id="profile" class="section">
+            <h2 style="text-align: center; margin-bottom: 20px;">👤 پروفایل و اطلاعات من</h2>
+            <div id="user-profile-info">
+                </div>
+        </div>
+
+        <div id="admin" class="section">
+            <h2 style="text-align: center; margin-bottom: 20px;">🛠 پنل ادمین</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <button onclick="showAdminTab('products')" id="admin-tab-products" class="btn-link active">مدیریت محصولات</button>
+                <button onclick="showAdminTab('categories')" id="admin-tab-categories" class="btn-link">مدیریت دسته‌بندی‌ها</button>
+                <button onclick="showAdminTab('orders')" id="admin-tab-orders" class="btn-link">مدیریت سفارش‌ها</button>
+                <button onclick="showAdminTab('users')" id="admin-tab-users" class="btn-link">مدیریت کاربران</button> </div>
+
+            <div id="admin-products" class="admin-tab-content active">
+                <div class="form-box" style="max-width: none;">
+                    <h3 style="color:var(--secondary); text-align: center; margin-bottom: 15px;">افزودن محصول جدید</h3>
+                    <form onsubmit="addProduct(event)">
+                        <div class="grid" style="gap:10px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                            <input type="text" id="p-name" required placeholder="نام محصول">
+                            <select id="p-category" class="category-select" style="padding: 10px; background: #111; border: 1px solid #555; color: white; border-radius: 5px; cursor: pointer;"></select>
+                            
+                            <input type="text" id="p-img" required placeholder="آدرس تصویر (URL)">
+                            <input type="number" id="p-price" required placeholder="قیمت (تومان)">
+                            <input type="number" id="p-off" placeholder="قیمت با تخفیف (اختیاری)">
+                        </div>
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>مشخصات فنی (هر خط یک ویژگی):</label>
+                            <input type="text" id="p-spec1" placeholder="مثال: حافظه: 1 ترابایت">
+                            <input type="text" id="p-spec2" placeholder="مثال: رنگ: مشکی">
+                            <input type="text" id="p-spec3" placeholder="مثال: گارانتی: 12 ماهه">
+                        </div>
+                        <button type="submit" class="btn btn-add">افزودن محصول</button>
+                    </form>
+                </div>
+                <h3 style="color:var(--warning); text-align: right; margin-top: 30px;">لیست محصولات موجود</h3>
+                <div class="grid" id="admin-grid" style="margin-top: 20px;"></div>
+            </div>
+
+            <div id="admin-categories" class="admin-tab-content">
+                <div class="form-box" style="max-width: 300px;">
+                    <form onsubmit="addCategory(event)">
+                        <div class="form-group">
+                            <label>نام دسته‌بندی جدید:</label>
+                            <input type="text" id="new-category-name" required placeholder="مثال: بازی‌های دیجیتال">
+                        </div>
+                        <button type="submit" class="btn btn-add">افزودن دسته‌بندی</button>
+                    </form>
+                    <hr style="border-color: #555; margin: 20px 0;">
+                    <h4 style="text-align: center;">لیست دسته‌بندی‌های فعال</h4>
+                    <ul id="category-management-list" class="category-list">
+                        </ul>
+                </div>
+            </div>
+
+            <div id="admin-orders" class="admin-tab-content">
+                <div class="search-container">
+                    <input type="text" id="order-search-input" oninput="renderAdminOrders()" placeholder="جستجو بر اساس نام کاربری مشتری..." />
+                </div>
+                <div id="orders-list"></div>
+            </div>
+
+            <div id="admin-users" class="admin-tab-content">
+                <h3 style="color:var(--secondary); text-align: right; margin-bottom: 15px;">لیست کاربران سایت</h3>
+                <div class="search-container">
+                    <input type="text" id="user-search-input" oninput="renderAdminUsers()" placeholder="جستجو بر اساس نام کاربری..." />
+                </div>
+                <div id="users-list-container">
+                    </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <div id="admin-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('admin-password-modal')">&times;</span>
+            <h3 class="modal-title"><i class="fas fa-key"></i> تغییر رمز عبور ادمین</h3>
+            <form id="change-admin-password-form" onsubmit="event.preventDefault(); changeAdminPassword(event);">
+                <div class="form-group">
+                    <label>رمز عبور جدید:</label>
+                    <input type="password" id="new-admin-password" required>
+                </div>
+                <div class="form-group">
+                    <label>تکرار رمز عبور جدید:</label>
+                    <input type="password" id="confirm-admin-password" required>
+                </div>
+                <button type="submit" class="btn btn-admin-action">تغییر رمز</button>
+            </form>
+            <p style="color: var(--danger); text-align: center; margin-top: 10px;" id="admin-password-error"></p>
+        </div>
+    </div>
+
+    <div id="user-password-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('user-password-modal')">&times;</span>
+            <h3 class="modal-title"><i class="fas fa-lock"></i> تغییر رمز عبور کاربر: <span id="target-username-display" style="color: var(--warning);"></span></h3>
+            <p style="color: #ccc; text-align: center; margin-bottom: 15px;">رمز عبور فعلی: <span id="current-user-password-display" style="font-weight: bold;"></span></p>
+            <form id="change-user-password-form" onsubmit="event.preventDefault(); saveUserPasswordChange();">
+                <input type="hidden" id="target-username-input">
+                <div class="form-group">
+                    <label>رمز عبور جدید:</label>
+                    <input type="password" id="new-user-password" required>
+                </div>
+                <div class="form-group">
+                    <label>تکرار رمز عبور جدید:</label>
+                    <input type="password" id="confirm-user-password" required>
+                </div>
+                <button type="submit" class="btn btn-admin-action">ذخیره رمز جدید</button>
+            </form>
+            <p style="color: var(--danger); text-align: center; margin-top: 10px;" id="user-password-error"></p>
+        </div>
+    </div>
+
+
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('edit-modal')">&times;</span>
+            <h3 class="modal-title"><i class="fas fa-edit"></i> ویرایش محصول</h3>
+            <form id="edit-product-form" onsubmit="event.preventDefault(); saveEditedProduct(this.dataset.productId);">
+                <div class="form-group"><label>نام محصول:</label><input type="text" id="edit-p-name" required></div>
+                <div class="form-group"><label>دسته‌بندی:</label><select id="edit-p-category" class="category-select"></select></div>
+                <div class="form-group"><label>آدرس تصویر (URL):</label><input type="text" id="edit-p-img" required></div>
+                <div class="form-group"><label>قیمت (تومان):</label><input type="number" id="edit-p-price" required></div>
+                <div class="form-group"><label>قیمت با تخفیف (اختیاری):</label><input type="number" id="edit-p-off"></div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>مشخصات فنی (هر خط یک ویژگی - مثال: حافظه: 1 ترابایت, رنگ: مشکی, گارانتی: 12 ماهه)</label>
+                    <input type="text" id="edit-p-specs1" placeholder="مشخصه اول">
+                    <input type="text" id="edit-p-specs2" placeholder="مشخصه دوم" style="margin-top: 5px;">
+                    <input type="text" id="edit-p-specs3" placeholder="مشخصه سوم" style="margin-top: 5px;">
+                </div>
+                <button type="submit" class="btn btn-add">ذخیره تغییرات</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; ۱۴۰۳ فروشگاه گیم - کلیه حقوق محفوظ است.</p>
+    </footer>
+
+    <script>
+        // --- CONSTANTS ---
+        const ADMIN_RESERVED_USERNAME = 'superuser';
+        const SHIPPING_COST = 100000;
+
+        // --- DATA INITIALIZATION ---
+        const defaultProducts = [
+            { id: 1, name: "کنسول PS5", price: 28000000, off: 26500000, img: "https://via.placeholder.com/300/4e5458/ffffff?text=PS5", category: "کنسول", specs: "حافظه: 1 ترابایت, رنگ: سفید, گارانتی: 12 ماهه" },
+            { id: 2, name: "دسته ایکس باکس", price: 3500000, off: null, img: "https://via.placeholder.com/300/4e5458/ffffff?text=XBOX", category: "لوازم جانبی", specs: "رنگ: مشکی, سنسور: شتاب سنج" },
+            { id: 3, name: "کنسول XBOX Series X", price: 29000000, off: 27500000, img: "https://via.placeholder.com/300/4e5458/ffffff?text=XBOX+SX", category: "کنسول", specs: "حافظه: 1 ترابایت, رنگ: مشکی, گارانتی: 18 ماهه" },
+        ];
+        const defaultCategories = ["کنسول", "لوازم جانبی"];
+        
+        // Data loading from localStorage
+        let products = JSON.parse(localStorage.getItem('gs_products')) || defaultProducts;
+        let categories = JSON.parse(localStorage.getItem('gs_categories')) || defaultCategories;
+        let cart = JSON.parse(localStorage.getItem('gs_cart')) || [];
+        // Add a non-admin user for testing user list
+        let users = JSON.parse(localStorage.getItem('gs_users')) || [
+            {username: ADMIN_RESERVED_USERNAME, password: 'adminpass'},
+            {username: 'testuser1', password: '12345'}
+        ]; 
+        let orders = JSON.parse(localStorage.getItem('gs_orders')) || [];
+        let currentUser = localStorage.getItem('gs_currentUser');
+        let isAdminLoggedIn = localStorage.getItem('gs_isAdmin') === 'true';
+        let lastShippingInfo = JSON.parse(localStorage.getItem('gs_lastShippingInfo')) || {};
+
+        let currentFilter = 'همه';
+
+        // --- SAVE AND RENDER FUNCTIONS ---
+        function saveData() {
+            localStorage.setItem('gs_products', JSON.stringify(products));
+            localStorage.setItem('gs_categories', JSON.stringify(categories));
+            localStorage.setItem('gs_cart', JSON.stringify(cart));
+            localStorage.setItem('gs_users', JSON.stringify(users));
+            localStorage.setItem('gs_orders', JSON.stringify(orders));
+            localStorage.setItem('gs_currentUser', currentUser);
+            localStorage.setItem('gs_isAdmin', isAdminLoggedIn);
+            localStorage.setItem('gs_lastShippingInfo', JSON.stringify(lastShippingInfo));
+            render();
+        }
+
+        function render() {
+            renderShop();
+            renderAdminProducts();
+            renderAdminOrders();
+            renderAdminUsers(); // NEW
+            renderCart();
+            renderUserOrders();
+            renderUserProfile();
+            updateAuthArea();
+            renderCategoryManagement();
+            renderCategorySelectors();
+            updateShippingFormTotal();
+        }
+
+        // --- AUTHENTICATION & USER MENU LOGIC ---
+        function updateAuthArea() {
+            const authArea = document.getElementById('user-auth-area');
+            if (currentUser) {
+                const displayName = isAdminLoggedIn ? 'ادمین' : currentUser;
+                authArea.innerHTML = `
+                    <div class="user-menu-container">
+                        <button onclick="toggleUserMenu()" style="border-bottom: 2px solid var(--secondary); margin-left: 10px;">
+                            👋 ${displayName} <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i>
+                        </button>
+                        <div id="user-dropdown" class="user-dropdown">
+                            <button onclick="switchTab('profile'); toggleUserMenu();"><i class="fas fa-user-circle"></i> پروفایل من</button>
+                            <button onclick="switchTab('user-orders'); toggleUserMenu();"><i class="fas fa-history"></i> سفارشات من</button>
+                            ${isAdminLoggedIn ? `<button onclick="switchTab('admin'); toggleUserMenu();"><i class="fas fa-tools"></i> پنل ادمین</button>` : ''}
+                            <button onclick="doLogout(); toggleUserMenu();" style="color: var(--danger);"><i class="fas fa-sign-out-alt"></i> خروج</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                authArea.innerHTML = `<button onclick="switchTab('login')" class="active"><i class="fas fa-user"></i> ورود / ثبت نام</button>`;
+            }
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById('user-dropdown');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        function handleUserRegister(e) { 
+            e.preventDefault();
+            const u = document.getElementById('user-reg-username').value.trim();
+            const p = document.getElementById('user-reg-password').value;
+            
+            if(users.find(x => x.username===u)) {
+                 document.getElementById('register-error').innerText = 'نام کاربری قبلا وجود دارد!';
+                 document.getElementById('register-error').style.display = 'block';
+                 return;
+            }
+
+            users.push({username:u, password:p});
+            currentUser = u; 
+            
+            if (u === ADMIN_RESERVED_USERNAME) {
+                isAdminLoggedIn = true;
+                alert('✅ حساب ادمین با موفقیت ایجاد شد! در حال انتقال به پنل ادمین...');
+                saveData();
+                switchTab('admin');
+            } else {
+                isAdminLoggedIn = false;
+                saveData(); 
+                switchTab('shop');
+            }
+            document.getElementById('register-error').style.display = 'none';
+        }
+
+        function handleUserLogin(e) { 
+            e.preventDefault();
+            const u = document.getElementById('user-login-username').value.trim();
+            const p = document.getElementById('user-login-password').value;
+            const user = users.find(x => x.username===u && x.password===p);
+            
+            if(user) { 
+                document.getElementById('login-error').style.display='none';
+                currentUser=u; 
+                
+                if (u === ADMIN_RESERVED_USERNAME) {
+                    isAdminLoggedIn = true;
+                    saveData();
+                    switchTab('admin');
+                } else {
+                    isAdminLoggedIn = false;
+                    saveData(); 
+                    switchTab('shop');
+                }
+            }
+            else { 
+                document.getElementById('login-error').style.display='block'; 
+            }
+        }
+
+        function doLogout() {
+            if(confirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟')) { 
+                isAdminLoggedIn=false; 
+                currentUser=null; 
+                saveData(); 
+                switchTab('shop'); 
+            }
+        }
+        
+        function getUserPassword(username) {
+            const user = users.find(u => u.username === username);
+            return user ? user.password : 'نامشخص';
+        }
+        
+        // Function to open the modal for changing user password by admin
+        function openUserPasswordModal(username) {
+            if (!isAdminLoggedIn) return alert('دسترسی رد شد.');
+            
+            const currentPassword = getUserPassword(username);
+
+            document.getElementById('target-username-display').innerText = username;
+            document.getElementById('target-username-input').value = username;
+            document.getElementById('current-user-password-display').innerText = currentPassword;
+            document.getElementById('user-password-error').innerText = ''; // Clear previous errors
+            document.getElementById('new-user-password').value = '';
+            document.getElementById('confirm-user-password').value = '';
+            document.getElementById('user-password-modal').style.display = 'block';
+        }
+
+        // Function to save user password change from modal
+        function saveUserPasswordChange() {
+            const username = document.getElementById('target-username-input').value;
+            const newPass = document.getElementById('new-user-password').value;
+            const confirmPass = document.getElementById('confirm-user-password').value;
+            const errorEl = document.getElementById('user-password-error');
+            errorEl.innerText = '';
+
+            if (newPass !== confirmPass) {
+                errorEl.innerText = 'رمز عبور جدید با تکرار آن مطابقت ندارد.';
+                return;
+            }
+
+            if (newPass.length < 5) {
+                errorEl.innerText = 'رمز عبور باید حداقل ۵ کاراکتر باشد.';
+                return;
+            }
+            
+            const userIndex = users.findIndex(u => u.username === username);
+            if (userIndex !== -1) {
+                users[userIndex].password = newPass;
+                saveData();
+                alert(`✅ رمز عبور کاربر "${username}" با موفقیت به "${newPass}" تغییر یافت.`);
+                closeModal('user-password-modal');
+                renderAdminUsers(); // Re-render the user list
+            } else {
+                errorEl.innerText = `خطا: کاربر "${username}" یافت نشد.`;
+            }
+        }
+
+
+        // Function to change the Admin's own password
+        function changeAdminPassword(e) {
+            const newPass = document.getElementById('new-admin-password').value;
+            const confirmPass = document.getElementById('confirm-admin-password').value;
+            const errorEl = document.getElementById('admin-password-error');
+            errorEl.innerText = '';
+
+            if (newPass !== confirmPass) {
+                errorEl.innerText = 'رمز عبور جدید با تکرار آن مطابقت ندارد.';
+                return;
+            }
+
+            if (newPass.length < 5) {
+                errorEl.innerText = 'رمز عبور باید حداقل ۵ کاراکتر باشد.';
+                return;
+            }
+
+            const adminIndex = users.findIndex(u => u.username === ADMIN_RESERVED_USERNAME);
+            if (adminIndex !== -1) {
+                users[adminIndex].password = newPass;
+                saveData();
+                alert('✅ رمز عبور ادمین با موفقیت تغییر یافت!');
+                closeModal('admin-password-modal');
+            } else {
+                errorEl.innerText = 'خطا: حساب ادمین یافت نشد.';
+            }
+        }
+
+
+        // --- RENDERING & FILTERING FUNCTIONS ---
+        
+        function renderCategorySelectors() {
+            // Renders categories for Add Product and Edit Product forms
+            const selectors = document.querySelectorAll('.category-select');
+            selectors.forEach(selectEl => {
+                selectEl.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            });
+        }
+        
+        function renderCategoryManagement() {
+             const listEl = document.getElementById('category-management-list');
+             if (listEl) {
+                listEl.innerHTML = categories.map(cat => 
+                    `<li><span>${cat}</span><button onclick="deleteCategory('${cat}')">حذف</button></li>`
+                ).join('');
+             }
+        }
+
+        function renderSpecsList(specsString) {
+            if (!specsString) return '';
+            const specsArray = specsString.split(/[,–]/).map(s => s.trim()).filter(s => s.length > 0);
+            if (specsArray.length === 0) return '';
+
+            return `
+                <ul class="specs-list">
+                    ${specsArray.map(spec => `<li>${spec}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        function filterProducts(category) {
+            currentFilter = category;
+            document.querySelectorAll('#category-menu button').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`#category-menu button[onclick="filterProducts('${category}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            renderShop();
+        }
+
+        function renderShop() {
+            const searchQuery = document.getElementById('product-search-input')?.value.toLowerCase().trim() || '';
+
+            const menuEl = document.getElementById('category-menu');
+            if (menuEl) {
+                const buttonsHtml = categories.map(cat => 
+                    `<button onclick="filterProducts('${cat}')" ${currentFilter === cat ? 'class="active"' : ''}>${cat}</button>`
+                ).join('');
+                menuEl.innerHTML = `<button onclick="filterProducts('همه')" ${currentFilter === 'همه' ? 'class="active"' : ''}>همه</button>` + buttonsHtml;
+            }
+
+            const filteredProducts = products.filter(p => 
+                (currentFilter === 'همه' || p.category === currentFilter) &&
+                (p.name.toLowerCase().includes(searchQuery))
+            );
+            
+            document.getElementById('product-grid').innerHTML = filteredProducts.map(p => `
+                <div class="card">
+                    <img src="${p.img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300'">
+                    <div class="card-body">
+                        <div class="card-title">${p.name}</div>
+                        <div class="price-row">${p.off ? `<span class="price-old">${p.price.toLocaleString()}</span> <span class="price-new">${p.off.toLocaleString()} تومان</span>` : `<span class="price-new">${p.price.toLocaleString()} تومان</span>`}</div>
+                        ${renderSpecsList(p.specs)}
+                        <button class="btn btn-add" style="margin-top: 15px;" onclick="addToCart(${p.id})">افزودن به سبد خرید</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function calculateCartTotals() {
+            const itemTotal = cart.reduce((sum, c) => {
+                const p = products.find(x => x.id === c.id);
+                return sum + (p ? (p.off || p.price) : 0);
+            }, 0);
+            const finalTotal = itemTotal + SHIPPING_COST;
+            return { itemTotal, finalTotal };
+        }
+
+        function renderCart() {
+            const cEl = document.getElementById('cart-items');
+            document.getElementById('shipping-cost-display').innerText = `${SHIPPING_COST.toLocaleString()} تومان`;
+
+            if(!cart.length) { 
+                cEl.innerHTML='<p style="text-align:center">سبد خرید شما خالی است.</p>'; 
+                document.getElementById('cart-total').innerText='جمع کل نهایی: ۰ تومان'; 
+                document.getElementById('cart-count').innerText = 0;
+                return; 
+            }
+            
+            const { itemTotal, finalTotal } = calculateCartTotals();
+
+            cEl.innerHTML = cart.map((c,i) => {
+                const p = products.find(x=>x.id===c.id);
+                if(!p) return '';
+                const pr = p.off||p.price;
+                return `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #444;"><span>${p.name}</span><span>${pr.toLocaleString()} تومان <button onclick="delCart(${i})" style="color:red; background:none; border:none; cursor:pointer">X</button></span></div>`;
+            }).join('');
+            
+            document.getElementById('cart-count').innerText = cart.length;
+            document.getElementById('cart-total').innerText = `جمع کل نهایی: ${finalTotal.toLocaleString()} تومان`;
+        }
+        
+        function updateShippingFormTotal() {
+            const totalEl = document.getElementById('final-total-display');
+            if (totalEl) {
+                 const { finalTotal } = calculateCartTotals();
+                 totalEl.innerText = `${finalTotal.toLocaleString()} تومان`;
+            }
+        }
+
+
+        function renderAdminProducts() {
+            document.getElementById('admin-grid').innerHTML = products.map((p,i) => `
+                <div class="card"><div class="card-body" style="text-align:center">
+                    <img src="${p.img}" style="height:80px; margin-bottom:10px;" alt="${p.name} thumbnail">
+                    <br>${p.name} (${p.category})<br>
+                    <button class="btn btn-del" onclick="delProd(${p.id})">حذف</button>
+                    <button class="btn btn-edit" onclick="editProduct(${p.id})">ویرایش</button>
+                </div></div>
+            `).join('');
+        }
+        
+        // Edit Product Modal Functions
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return alert('محصول یافت نشد!');
+            
+            // Populate form fields
+            document.getElementById('edit-product-form').dataset.productId = productId;
+            document.getElementById('edit-p-name').value = product.name;
+            document.getElementById('edit-p-img').value = product.img;
+            document.getElementById('edit-p-price').value = product.price;
+            document.getElementById('edit-p-off').value = product.off || '';
+            
+            // Handle Specs
+            const specsArray = product.specs ? product.specs.split(/[,–]/).map(s => s.trim()) : [];
+            document.getElementById('edit-p-specs1').value = specsArray[0] || '';
+            document.getElementById('edit-p-specs2').value = specsArray[1] || '';
+            document.getElementById('edit-p-specs3').value = specsArray[2] || '';
+            
+            // Handle Category Select
+            renderCategorySelectors(); // Re-render categories in case they were changed
+            document.getElementById('edit-p-category').value = product.category;
+
+            document.getElementById('edit-modal').style.display = 'block';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            document.getElementById('admin-password-error').innerText = ''; // Clear admin error on close
+            document.getElementById('user-password-error').innerText = ''; // Clear user error on close
+        }
+
+        function saveEditedProduct(productId) {
+            const id = Number(productId);
+            const index = products.findIndex(p => p.id === id);
+            if (index === -1) return alert('خطا در یافتن محصول!');
+
+            const spec1 = document.getElementById('edit-p-specs1').value.trim();
+            const spec2 = document.getElementById('edit-p-specs2').value.trim();
+            const spec3 = document.getElementById('edit-p-specs3').value.trim();
+            const allSpecs = [spec1, spec2, spec3].filter(s => s.length > 0).join(', ');
+
+            products[index] = {
+                id: id,
+                name: document.getElementById('edit-p-name').value,
+                category: document.getElementById('edit-p-category').value,
+                img: document.getElementById('edit-p-img').value,
+                price: Number(document.getElementById('edit-p-price').value),
+                off: document.getElementById('edit-p-off').value ? Number(document.getElementById('edit-p-off').value) : null,
+                specs: allSpecs
+            };
+
+            saveData();
+            closeModal('edit-modal');
+            alert('✅ محصول با موفقیت ویرایش شد.');
+        }
+
+        // Render User Profile
+        function renderUserProfile() {
+            const profileEl = document.getElementById('user-profile-info');
+            if (!profileEl || !currentUser) return; // If no user, stop here
+
+            const userInfo = users.find(u => u.username === currentUser);
+            const shipping = lastShippingInfo[currentUser];
+            
+            let html = `<div class="profile-info-box">
+                <h3><i class="fas fa-id-badge"></i> اطلاعات حساب کاربری</h3>
+                <p><strong>نام کاربری:</strong> ${userInfo.username}</p>
+                <p><strong>رمز عبور:</strong> *** (برای حفظ امنیت، نمایش داده نمی‌شود)</p>
+                
+                ${isAdminLoggedIn ? 
+                    `<button class="btn-admin-action" onclick="document.getElementById('admin-password-modal').style.display='block';" style="width: auto;"><i class="fas fa-key"></i> تغییر رمز عبور ادمین</button>` 
+                    : ''}
+            </div>`;
+
+            if (shipping) {
+                html += `<div class="profile-info-box">
+                    <h3><i class="fas fa-shipping-fast"></i> آخرین آدرس ارسال ثبت‌شده</h3>
+                    <p><strong>نام گیرنده:</strong> ${shipping.name}</p>
+                    <p><strong>شماره تماس:</strong> ${shipping.phone}</p>
+                    <p><strong>آدرس:</strong> ${shipping.address}</p>
+                    <p><strong>پلاک:</strong> ${shipping.plaque}، <strong>کد پستی:</strong> ${shipping.postal}</p>
+                </div>`;
+            } else {
+                html += `<p style="text-align:center; color: var(--warning);">شما هنوز هیچ سفارشی ثبت نکرده‌اید تا اطلاعات ارسالی ذخیره شود.</p>`;
+            }
+
+            profileEl.innerHTML = html;
+        }
+
+        function toggleOrderDetails(orderId) {
+            const detailEl = document.getElementById(`order-details-${orderId}`);
+            if (detailEl) {
+                detailEl.classList.toggle('show');
+            }
+        }
+
+        function renderUserOrders() {
+            const list = orders.filter(o=>o.customer===currentUser).sort((a,b)=>b.id-a.id);
+            const listEl = document.getElementById('user-orders-list');
+
+            listEl.innerHTML = list.length ? list.map(o => {
+                const statusColor = o.status === 'تکمیل شده' ? 'var(--success)' : o.status === 'لغو شده' ? '#e74c3c' : o.status === 'در انتظار پرداخت' ? 'var(--danger)' : '#f1c40f';
+                
+                // Details HTML
+                const addressDetails = o.shipping_info ? `
+                    <p><i class="fas fa-user-tag"></i> گیرنده: <strong>${o.shipping_info.name}</strong></p>
+                    <p><i class="fas fa-phone-alt"></i> تماس: <strong>${o.shipping_info.phone}</strong></p>
+                    <p><i class="fas fa-map-marker-alt"></i> آدرس: <strong>${o.shipping_info.address}</strong> (پلاک: ${o.shipping_info.plaque}، کد پستی: ${o.shipping_info.postal})</p>
+                ` : '<p style="color:var(--danger)">اطلاعات ارسال ثبت نشده است.</p>';
+
+                const itemsList = o.items.length ? `
+                    <h5 style="color:var(--secondary); margin-top:10px;">اقلام سفارش:</h5>
+                    <ul class="item-list">
+                        ${o.items.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                ` : '';
+                
+                // Cancellation Note
+                const cancellation = o.status === 'لغو شده' && o.cancellation_note ? `
+                    <div class="cancellation-alert">
+                        <i class="fas fa-exclamation-triangle"></i> **سفارش لغو شد:** ${o.cancellation_note}
+                    </div>
+                ` : '';
+
+
+                return `
+                    <div class="order-summary" style="border-right-color: ${statusColor};">
+                        <div class="order-header" onclick="toggleOrderDetails(${o.id})">
+                            <div>
+                                <strong>سفارش #${o.id%100}</strong> - تاریخ: ${new Date(o.id).toLocaleDateString('fa-IR')}
+                                <div style="font-size: 0.9em; color: #aaa;">
+                                    مبلغ: ${o.total.toLocaleString()} تومان | وضعیت: <span style="color: ${statusColor};">${o.status}</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div id="order-details-${o.id}" class="order-details">
+                            ${cancellation}
+                            <h4 style="color: var(--primary); margin-top: 10px;">اطلاعات ارسال:</h4>
+                            ${addressDetails}
+                            ${itemsList}
+                        </div>
+                    </div>
+                `;
+            }).join('') : '<p style="text-align:center">شما هنوز سفارشی ثبت نکرده‌اید.</p>';
+        }
+
+        function renderAdminOrders() {
+            // Updated to use the search input
+            const searchUser = document.getElementById('order-search-input')?.value.toLowerCase().trim() || '';
+            
+            const filteredOrders = orders.filter(o => 
+                o.customer.toLowerCase().includes(searchUser)
+            ).sort((a,b)=>a.id-b.b);
+
+            document.getElementById('orders-list').innerHTML = filteredOrders.length ? filteredOrders.map(o => {
+                const statusColor = o.status === 'تکمیل شده' ? 'var(--success)' : o.status === 'لغو شده' ? '#e74c3c' : o.status === 'در انتظار پرداخت' ? 'var(--danger)' : '#f1c40f';
+                
+                // Details HTML
+                const addressDetails = o.shipping_info ? `
+                    <p><i class="fas fa-user-tag"></i> گیرنده: <strong>${o.shipping_info.name}</strong></p>
+                    <p><i class="fas fa-phone-alt"></i> تماس: <strong>${o.shipping_info.phone}</strong></p>
+                    <p><i class="fas fa-map-marker-alt"></i> آدرس: <strong>${o.shipping_info.address}</strong> (پلاک: ${o.shipping_info.plaque}، کد پستی: ${o.shipping_info.postal})</p>
+                ` : '<p style="color:var(--danger)">اطلاعات ارسال ثبت نشده است.</p>';
+
+                const paymentDetails = o.payment_confirmation ? `
+                    <p><i class="fas fa-credit-card"></i> صاحب کارت: <strong>${o.payment_confirmation.owner}</strong></p>
+                    <p><i class="fas fa-hashtag"></i> ۴ رقم آخر کارت: <strong>${o.payment_confirmation.last4}</strong></p>
+                ` : '<p style="color:#f1c40f">جزئیات پرداخت ثبت نشده است.</p>';
+                
+                // User Auth Info (Removed here, moved to dedicated user management)
+
+                const itemsList = o.items.length ? `
+                    <h5 style="color:var(--secondary); margin-top:10px;">اقلام سفارش:</h5>
+                    <ul class="item-list">
+                        ${o.items.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                ` : '';
+
+                // Actions
+                let actions = '';
+                if (o.status !== 'لغو شده' && o.status !== 'تکمیل شده') {
+                     if(o.status==='در حال بررسی') {
+                         actions += `<button onclick="completeOrder(${o.id})" style="background:var(--success); color:white; border:none; padding:8px 15px; margin-top:10px; cursor:pointer; border-radius: 5px;"><i class="fas fa-check"></i> تکمیل سفارش</button>`;
+                     } else if(o.status==='در انتظار پرداخت') {
+                         actions += `<button onclick="approveOrder(${o.id})" style="background:#f1c40f; color:white; border:none; padding:8px 15px; margin-top:10px; cursor:pointer; border-radius: 5px;"><i class="fas fa-clipboard-check"></i> تایید پرداخت</button>`;
+                     }
+                     // Cancel Button
+                     actions += `<button onclick="cancelOrder(${o.id})" class="btn-cancel" style="margin-right: 10px;"><i class="fas fa-times-circle"></i> لغو سفارش</button>`;
+                }
+                
+                return `
+                    <div class="order-summary" style="border-right-color: ${statusColor};">
+                        <div class="order-header" onclick="toggleOrderDetails(${o.id})">
+                            <div>
+                                <strong>سفارش #${o.id%100}</strong> - مشتری: <strong>${o.customer}</strong>
+                                <div style="font-size: 0.9em; color: #aaa;">
+                                    مبلغ: ${o.total.toLocaleString()} تومان | وضعیت: <span style="color: ${statusColor};">${o.status}</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div id="order-details-${o.id}" class="order-details">
+                            <h4 style="color: var(--primary); margin-top: 10px;">اطلاعات ارسال:</h4>
+                            ${addressDetails}
+                            <hr style="border-color:#555; margin: 10px 0;">
+                            <h4 style="color: var(--primary);">تایید پرداخت:</h4>
+                            ${paymentDetails}
+                            ${itemsList}
+                            ${actions}
+                        </div>
+                    </div>
+                `;
+            }).join('') : '<p style="text-align:center">سفارشی برای مدیریت وجود ندارد.</p>';
+        }
+
+        function renderAdminUsers() {
+            if (!isAdminLoggedIn) return;
+
+            const searchUser = document.getElementById('user-search-input')?.value.toLowerCase().trim() || '';
+            
+            const filteredUsers = users.filter(u => 
+                u.username.toLowerCase().includes(searchUser)
+            );
+
+            const listEl = document.getElementById('users-list-container');
+
+            if (filteredUsers.length === 0) {
+                listEl.innerHTML = '<p style="text-align:center">کاربری با این مشخصات یافت نشد.</p>';
+                return;
+            }
+
+            const tableHtml = `
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>نام کاربری</th>
+                            <th style="width: 150px;">رمز عبور (فقط ادمین می‌بیند)</th>
+                            <th style="width: 250px;">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredUsers.map(u => `
+                            <tr>
+                                <td>${u.username} ${u.username === ADMIN_RESERVED_USERNAME ? '(مدیر اصلی)' : ''}</td>
+                                <td>${u.password}</td>
+                                <td>
+                                    <button onclick="openUserPasswordModal('${u.username}')" 
+                                            class="btn-password" 
+                                            style="width: 150px;">
+                                        <i class="fas fa-key"></i> تغییر رمز
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            listEl.innerHTML = tableHtml;
+        }
+
+        // --- CATEGORY MANAGEMENT FUNCTIONS ---
+        function addCategory(e) {
+            e.preventDefault();
+            if (!isAdminLoggedIn) return alert('دسترسی رد شد.');
+
+            const newCat = document.getElementById('new-category-name').value.trim();
+            if (newCat && !categories.includes(newCat)) {
+                categories.push(newCat);
+                saveData();
+                alert(`دسته‌بندی "${newCat}" با موفقیت اضافه شد.`);
+                e.target.reset();
+            } else if (categories.includes(newCat)) {
+                alert('این دسته‌بندی قبلاً وجود دارد.');
+            }
+        }
+
+        function deleteCategory(catName) {
+            if (!isAdminLoggedIn) return alert('دسترسی رد شد.');
+            if (products.some(p => p.category === catName)) {
+                return alert('نمی‌توانید دسته‌بندی را حذف کنید. ابتدا تمام محصولات موجود در این دسته‌بندی را حذف کنید.');
+            }
+            if (confirm(`آیا مطمئن هستید که می‌خواهید دسته‌بندی "${catName}" را حذف کنید؟`)) {
+                categories = categories.filter(cat => cat !== catName);
+                if (currentFilter === catName) currentFilter = 'همه';
+                saveData();
+                alert(`دسته‌بندی "${catName}" حذف شد.`);
+            }
+        }
+
+        // --- OPERATION FUNCTIONS ---
+        function addToCart(id) { if(!currentUser) return alert('برای افزودن به سبد خرید باید وارد شوید.') || switchTab('login'); cart.push({id}); saveData(); alert('محصول به سبد خرید اضافه شد.'); }
+        function delCart(i) { cart.splice(i,1); saveData(); }
+        
+        function delProd(id) { 
+            if(isAdminLoggedIn && confirm('آیا مطمئن هستید که می‌خواهید این محصول را حذف کنید؟')) { 
+                products = products.filter(p => p.id !== id);
+                saveData(); 
+            } else if (!isAdminLoggedIn) {
+                alert('دسترسی رد شد. فقط ادمین می‌تواند محصولات را حذف کند.');
+            }
+        }
+        
+        function addProduct(e) { 
+            e.preventDefault(); 
+            if (!isAdminLoggedIn) return alert('دسترسی رد شد.');
+
+            const category = document.getElementById('p-category').value;
+            if (!category) return alert('لطفاً یک دسته‌بندی انتخاب کنید.');
+
+            const spec1 = document.getElementById('p-spec1').value.trim();
+            const spec2 = document.getElementById('p-spec2').value.trim();
+            const spec3 = document.getElementById('p-spec3').value.trim();
+
+            const allSpecs = [spec1, spec2, spec3].filter(s => s.length > 0).join(', ');
+
+            products.unshift({
+                id:Date.now(), 
+                name:document.getElementById('p-name').value, 
+                category: category,
+                img:document.getElementById('p-img').value, 
+                price:Number(document.getElementById('p-price').value), 
+                off:document.getElementById('p-off').value?Number(document.getElementById('p-off').value):null,
+                specs: allSpecs 
+            }); 
+            saveData(); 
+            alert('محصول با موفقیت اضافه شد.'); 
+            e.target.reset(); 
+        }
+        
+        // **FUNCTION ONLY ADMIN CAN EXECUTE**
+        function approveOrder(id) { 
+            if(isAdminLoggedIn) {
+                orders.find(o=>o.id===id).status='در حال بررسی'; 
+                saveData(); 
+            } else {
+                alert('دسترسی رد شد. فقط ادمین می‌تواند سفارش‌ها را تایید کند.');
+            }
+        }
+
+        // **FUNCTION ONLY ADMIN CAN EXECUTE (UPDATED)**
+        function cancelOrder(id) {
+            if(isAdminLoggedIn && confirm('آیا مطمئن هستید که می‌خواهید این سفارش را لغو کنید؟')) {
+                const order = orders.find(o=>o.id===id);
+                order.status='لغو شده';
+                // Add Cancellation Note
+                order.cancellation_note = 'لغو به دلیل عدم تأیید توسط فروشگاه. مبلغ سفارش شما پس از ۴۸ ساعت کاری به همان شماره کارت واریزی بازگشت داده خواهد شد.';
+                saveData();
+            } else if (!isAdminLoggedIn) {
+                alert('دسترسی رد شد. فقط ادمین می‌تواند سفارش‌ها را لغو کند.');
+            }
+        }
+        
+        // **FUNCTION ONLY ADMIN CAN EXECUTE**
+        function completeOrder(id) { 
+            if(isAdminLoggedIn) {
+                orders.find(o=>o.id===id).status='تکمیل شده'; 
+                saveData(); 
+            } else {
+                alert('دسترسی رد شد. فقط ادمین می‌تواند سفارش‌ها را تکمیل کند.');
+            }
+        }
+        
+        function goToShipping() { 
+            if(!cart.length) return alert('سبد خرید شما خالی است.') || switchTab('shop'); 
+            updateShippingFormTotal(); // Ensure total is calculated before displaying the form
+            switchTab('shipping'); 
+        }
+        
+        function submitShippingForm(e) {
+            e.preventDefault();
+            
+            // Calculate final total including shipping
+            const { finalTotal } = calculateCartTotals();
+            
+            const shippingInfo = {
+                name: document.getElementById('ship-name').value,
+                phone: document.getElementById('ship-phone').value,
+                address: document.getElementById('ship-address').value,
+                plaque: document.getElementById('ship-plaque').value,
+                postal: document.getElementById('ship-postal').value,
+            };
+
+            orders.unshift({
+                id: Date.now(), 
+                customer: currentUser, 
+                total: finalTotal, // Final total including shipping
+                status: 'در انتظار پرداخت',
+                items: cart.map(c=>products.find(p=>p.id===c.id).name),
+                shipping_info: shippingInfo,
+                payment_confirmation: {
+                    owner: document.getElementById('payment-owner-name').value,
+                    last4: document.getElementById('payment-last-digits').value
+                }
+            });
+
+            // Save last shipping info for the current user
+            lastShippingInfo[currentUser] = shippingInfo;
+
+            alert(`سفارش شما با موفقیت ثبت شد! کد پیگیری: ${Date.now()%100}\nمبلغ قابل پرداخت: ${finalTotal.toLocaleString()} تومان (شامل هزینه ارسال)\n(در انتظار تایید پرداخت توسط ادمین)`);
+            cart=[]; saveData(); switchTab('user-orders');
+        }
+
+        // --- TAB MANAGEMENT ---
+        function switchTab(t) {
+            if(['cart','shipping','user-orders','profile'].includes(t) && !currentUser) return alert('برای دسترسی به این بخش باید وارد شوید.') || switchTab('login');
+            if(t==='admin' && !isAdminLoggedIn) return alert('دسترسی به این بخش فقط برای ادمین مجاز است.');
+            
+            document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
+            document.getElementById(t).classList.add('active');
+            
+            document.querySelectorAll('nav button').forEach(e=>e.classList.remove('active'));
+            const tabButton = document.getElementById('tab-' + t);
+            if(tabButton) tabButton.classList.add('active');
+
+            const menu = document.getElementById('user-dropdown');
+            if (menu) menu.classList.remove('show');
+            
+            // Re-render necessary sections on tab switch
+            if (t === 'profile') renderUserProfile();
+            if (t === 'user-orders') renderUserOrders();
+            if (t === 'admin') renderAdminOrders(); // Default to orders when switching to admin tab
+            if (t === 'cart') renderCart();
+        }
+        function showAdminTab(t) {
+            document.querySelectorAll('.admin-tab-content').forEach(e=>e.classList.remove('active'));
+            document.getElementById('admin-'+t).classList.add('active');
+            
+            // Ensure necessary data is rendered on tab switch
+            if (t === 'categories') renderCategoryManagement();
+            if (t === 'products') renderCategorySelectors();
+            if (t === 'orders') renderAdminOrders();
+            if (t === 'users') renderAdminUsers(); // NEW
+
+            document.querySelectorAll('#admin button.btn-link').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('admin-tab-'+t).classList.add('active');
+        }
+
+        // Initial render on page load
+        render();
+        // Event listener to close dropdown when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.user-menu-container button')) {
+                const dropdowns = document.getElementsByClassName("user-dropdown");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+            // Close modal when clicking outside
+            const editModal = document.getElementById('edit-modal');
+            const adminPassModal = document.getElementById('admin-password-modal');
+            const userPassModal = document.getElementById('user-password-modal');
+            
+            if (event.target === editModal) {
+                editModal.style.display = "none";
+            }
+            if (event.target === adminPassModal) {
+                adminPassModal.style.display = "none";
+                document.getElementById('admin-password-error').innerText = ''; // Clear error on close
+            }
+            if (event.target === userPassModal) {
+                userPassModal.style.display = "none";
+                document.getElementById('user-password-error').innerText = ''; // Clear error on close
+            }
+        }
+    </script>
+
+</body>
+</html>
