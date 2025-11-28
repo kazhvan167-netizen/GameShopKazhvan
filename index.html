@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -465,7 +465,13 @@ saveEditedProduct(this.dataset.productId);">
         }
         
         let orders = JSON.parse(localStorage.getItem('gs_orders')) || [];
+        // مقدار را از localStorage می‌خوانیم
         let currentUser = localStorage.getItem('gs_currentUser');
+        // اگر مقدار ذخیره شده رشته‌ی "null" یا رشته‌ی خالی "" بود، آن را به مقدار واقعی null تغییر می‌دهیم
+        if (currentUser === 'null' || currentUser === '') {
+            currentUser = null;
+        }
+
         let isAdminLoggedIn = localStorage.getItem('gs_isAdmin') === 'true';
         let lastShippingInfo = JSON.parse(localStorage.getItem('gs_lastShippingInfo')) || {};
         let currentFilter = 'همه';
@@ -498,7 +504,8 @@ saveEditedProduct(this.dataset.productId);">
             localStorage.setItem('gs_cart', JSON.stringify(cart));
             localStorage.setItem('gs_users', JSON.stringify(users));
             localStorage.setItem('gs_orders', JSON.stringify(orders));
-            localStorage.setItem('gs_currentUser', currentUser);
+            // اصلاحیه برای رفع مشکل رشته "null" در Local Storage
+            localStorage.setItem('gs_currentUser', currentUser || ''); 
             localStorage.setItem('gs_isAdmin', isAdminLoggedIn);
             localStorage.setItem('gs_lastShippingInfo', JSON.stringify(lastShippingInfo));
             render();
@@ -520,6 +527,7 @@ saveEditedProduct(this.dataset.productId);">
 
         function updateAuthArea() {
             const authArea = document.getElementById('user-auth-area');
+            // چک کردن currentUser. اگر رشته خالی "" باشد، false خواهد شد.
             if (currentUser) {
                 const displayName = isAdminLoggedIn ? 'ادمین' : currentUser;
                 authArea.innerHTML = `
