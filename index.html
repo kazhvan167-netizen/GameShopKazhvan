@@ -151,6 +151,9 @@
         
         <div id="shop" class="section active">
             <h2 style="margin-bottom: 20px;">جدیدترین محصولات</h2>
+            <div id="sync-status-alert" style="color:var(--info); text-align:center; margin-bottom:15px; display:none;">
+                <i class="fas fa-sync-alt fa-spin"></i> در حال همگام‌سازی داده‌ها...
+            </div>
             <div class="search-container">
                 <input type="text" id="product-search-input" oninput="renderShop()" placeholder="جستجو بر اساس نام محصول..." 
 />
@@ -367,12 +370,18 @@ margin: 20px 0;">
 
             <div id="admin-users" class="admin-tab-content">
                 <div class="form-box" style="max-width: none; margin-bottom: 20px; border-color: var(--warning);">
-                    <h4 style="color: var(--warning); text-align: center;">⚙️ ابزار همگام‌سازی دستی (Manual Sync Tool)</h4>
-                    <p style="font-size: 0.9em; text-align: center; color: #ccc;">(تنها راه بدون سرور برای انتقال محصولات جدید)</p>
-                    <button class="btn btn-admin-action" style="background-color: var(--warning); color: #000; margin-bottom: 15px;" onclick="exportProductsData()">
-                        نمایش محصولات برای جایگزینی
+                    <h4 style="color: var(--warning); text-align: center;">⚙️ دستورالعمل نهایی همگام‌سازی تمام داده‌ها</h4>
+                    <p style="font-size: 0.9em; text-align: right; color: #ccc; direction:rtl;">
+                        این تنها راه برای **ذخیره سفارشات جدید، کاربران جدید و محصولات جدید** روی دستگاه‌های دیگر است.
+                        <br><br>
+                        ۱. پس از ثبت هرگونه تغییر (سفارش، کاربر، محصول)، دکمه زیر را بزنید.
+                        <br>
+                        ۲. محتوای JSON کامل را کپی کرده و در فایل JSON خارجی خود (مثلاً در یک GitHub Gist) جایگزین کنید.
+                    </p>
+                    <button class="btn btn-admin-action" style="background-color: var(--warning); color: #000; margin-bottom: 15px;" onclick="exportAllData()">
+                        نمایش کل داده‌ها برای همگام‌سازی نهایی
                     </button>
-                    <pre id="exported-products-data" style="white-space: pre-wrap; word-wrap: break-word; background: #000; padding: 10px; border: 1px dashed #fff; border-radius: 5px; max-height: 200px; overflow-y: auto; text-align: left; direction: ltr; display: none; font-size: 0.8em;"></pre>
+                    <pre id="exported-data" style="white-space: pre-wrap; word-wrap: break-word; background: #000; padding: 10px; border: 1px dashed #fff; border-radius: 5px; max-height: 200px; overflow-y: auto; text-align: left; direction: ltr; display: none; font-size: 0.8em;"></pre>
                 </div>
                 <h3 style="color:var(--secondary); text-align: right;
 margin-bottom: 15px;">لیست کاربران</h3>
@@ -452,33 +461,30 @@ saveEditedProduct(this.dataset.productId);">
         // --- CONSTANTS ---
         const ADMIN_RESERVED_USERNAME = 'superuser';
         const SHIPPING_COST = 100000;
+        
+        // **مهم:** این لینک را با آدرس فایل JSON که تمام داده‌ها (محصولات، کاربران، و سفارش‌ها) را در آن ذخیره می‌کنید جایگزین کنید.
+        // محتوای این لینک باید یک آبجکت شامل کلیدهای "products", "users", و "orders" باشد.
+        const EXTERNAL_DATA_URL = 'https://gist.githubusercontent.com/username/gistid/raw/all_data.json'; 
 
-        // --- DATA ---
-        // این آرایه باید به صورت دستی توسط ادمین به‌روز شود (با استفاده از ابزار جدید در پنل ادمین)
-        const defaultProducts = [
+        // --- DATA INITIALIZATION & STRUCTURE ---
+        const initialProducts = [
             { id: 1, name: "کنسول PS5", price: 28000000, off: 26500000, img: "https://via.placeholder.com/300/4e5458/ffffff?text=PS5", category: "کنسول", specs: "حافظه: 1 ترابایت, رنگ: سفید, گارانتی: 12 ماهه" },
             { id: 2, name: "دسته ایکس باکس", price: 3500000, off: null, img: "https://via.placeholder.com/300/4e5458/ffffff?text=XBOX", category: "لوازم جانبی", specs: "رنگ: مشکی, سنسور: شتاب سنج" },
-            { id: 3, name: "کنسول XBOX Series X", price: 29000000, off: 27500000, img: "https://via.placeholder.com/300/4e5458/ffffff?text=XBOX+SX", category: "کنسول", specs: "حافظه: 1 ترابایت, رنگ: مشکی, گارانتی: 18 ماهه" },
         ];
-        const defaultCategories = ["کنسول", "لوازم جانبی"];
-        let products = JSON.parse(localStorage.getItem('gs_products')) || defaultProducts;
-        let categories = JSON.parse(localStorage.getItem('gs_categories')) || defaultCategories;
+        const initialCategories = ["کنسول", "لوازم جانبی", "بازی"];
+        
+        // Admin user definition (Hashed password for 'adminpass')
+        const initialUsers = [{ username: ADMIN_RESERVED_USERNAME, password: hashPassword('adminpass') }];
+        
+        // متغیرهای اصلی (داده‌های اصلی از Local Storage یا EXTERNAL_DATA_URL بارگذاری می‌شوند)
+        let products = [];
+        let categories = []; 
+        let users = [];
+        let orders = [];
         let cart = JSON.parse(localStorage.getItem('gs_cart')) || [];
         
-        // --- اصلاحیه امنیتی: حفظ رمز ادمین در Local Storage ---
-        let users = JSON.parse(localStorage.getItem('gs_users'));
-        if (!users) {
-            // اگر برای اولین بار است، کاربر ادمین با رمز پیش‌فرض را ایجاد کن.
-            users = [{ username: ADMIN_RESERVED_USERNAME, password: hashPassword('adminpass') }];
-        }
-        
-        let orders = JSON.parse(localStorage.getItem('gs_orders')) || [];
-        // مقدار را از localStorage می‌خوانیم
         let currentUser = localStorage.getItem('gs_currentUser');
-        // اگر مقدار ذخیره شده رشته‌ی "null" یا رشته‌ی خالی "" بود، آن را به مقدار واقعی null تغییر می‌دهیم
-        if (currentUser === 'null' || currentUser === '') {
-            currentUser = null;
-        }
+        if (currentUser === 'null' || currentUser === '') { currentUser = null; }
 
         let isAdminLoggedIn = localStorage.getItem('gs_isAdmin') === 'true';
         let lastShippingInfo = JSON.parse(localStorage.getItem('gs_lastShippingInfo')) || {};
@@ -487,13 +493,11 @@ saveEditedProduct(this.dataset.productId);">
         // --- CORE FUNCTIONS ---
         
         /**
-         * @description شبیه‌سازی هش کردن رمز عبور (در محیط واقعی باید از Bcrypt استفاده شود)
+         * @description شبیه‌سازی هش کردن رمز عبور
          * @param {string} password - رمز عبور به صورت متن ساده
          * @returns {string} رمز عبور هش شده
          */
         function hashPassword(password) {
-            // از هش ساده و غیرقابل بازگشت MD5 برای شبیه‌سازی استفاده شده است.
-            // توجه: این تابع صرفاً برای Local Storage است و در سرور باید از Bcrypt یا Argon2 استفاده شود.
             function toHex(buffer) {
                 return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
             }
@@ -507,27 +511,90 @@ saveEditedProduct(this.dataset.productId);">
         }
 
         function saveData() {
+            // تمام داده‌های حیاتی را به صورت محلی ذخیره می‌کنیم
             localStorage.setItem('gs_products', JSON.stringify(products));
             localStorage.setItem('gs_categories', JSON.stringify(categories));
-            localStorage.setItem('gs_cart', JSON.stringify(cart));
             localStorage.setItem('gs_users', JSON.stringify(users));
             localStorage.setItem('gs_orders', JSON.stringify(orders));
-            // اصلاحیه برای رفع مشکل رشته "null" در Local Storage
+
+            // داده‌های جلسه و سبد خرید
+            localStorage.setItem('gs_cart', JSON.stringify(cart));
             localStorage.setItem('gs_currentUser', currentUser || ''); 
             localStorage.setItem('gs_isAdmin', isAdminLoggedIn);
             localStorage.setItem('gs_lastShippingInfo', JSON.stringify(lastShippingInfo));
-            render();
+
+            if (window.dataLoaded) render();
         }
         
-        // --- NEW FUNCTION FOR MANUAL SYNC ---
-        function exportProductsData() {
+        // --- ASYNC INITIALIZATION FUNCTION (Automatic Read Sync for All Data) ---
+        async function init() {
+            const syncAlert = document.getElementById('sync-status-alert');
+            syncAlert.style.display = 'block';
+
+            // 1. Load local data (in case fetching fails)
+            products = JSON.parse(localStorage.getItem('gs_products')) || initialProducts;
+            categories = JSON.parse(localStorage.getItem('gs_categories')) || initialCategories;
+            users = JSON.parse(localStorage.getItem('gs_users')) || initialUsers;
+            orders = JSON.parse(localStorage.getItem('gs_orders')) || [];
+
+            // 2. Try to fetch the latest public data from the external URL
+            try {
+                const response = await fetch(EXTERNAL_DATA_URL, { cache: "no-cache" });
+                if (!response.ok) throw new Error("Could not fetch external data.");
+                const externalData = await response.json();
+                
+                // 3. Aggressive Sync Logic: If external data is valid, use it for everything
+                if (externalData && Array.isArray(externalData.products) && Array.isArray(externalData.users) && Array.isArray(externalData.orders)) {
+                    
+                    products = externalData.products.length > 0 ? externalData.products : initialProducts;
+                    // Recalculate categories from products (safer)
+                    categories = [...new Set(products.map(p => p.category))];
+                    
+                    // Merge admin account if missing (security precaution)
+                    const externalAdmin = externalData.users.find(u => u.username === ADMIN_RESERVED_USERNAME);
+                    if (!externalAdmin) {
+                        users = initialUsers.concat(externalData.users.filter(u => u.username !== ADMIN_RESERVED_USERNAME));
+                    } else {
+                        users = externalData.users;
+                    }
+                    
+                    orders = externalData.orders || [];
+
+                    // Update Local Storage with the fetched data
+                    localStorage.setItem('gs_products', JSON.stringify(products));
+                    localStorage.setItem('gs_categories', JSON.stringify(categories));
+                    localStorage.setItem('gs_users', JSON.stringify(users));
+                    localStorage.setItem('gs_orders', JSON.stringify(orders));
+                    
+                    console.log("✅ تمام داده‌ها (محصولات، کاربران، سفارش‌ها) به صورت خودکار از منبع خارجی همگام‌سازی شدند.");
+                }
+
+            } catch (error) {
+                console.warn("⚠️ خطا در بارگیری داده‌های خارجی. از داده‌های محلی/اولیه استفاده می‌شود. (Error: " + error.message + ")");
+            } finally {
+                syncAlert.style.display = 'none';
+                window.dataLoaded = true;
+                render(); // Final render after all data is finalized
+            }
+        }
+        
+        // --- MANUAL SYNC EXPORT TOOL (For Admin to update External JSON) ---
+        function exportAllData() {
             if (!isAdminLoggedIn) return alert('دسترسی رد شد.');
-            // استخراج آرایه محصولات به صورت JSON زیبا برای جایگزینی آسان در کد
-            const data = JSON.stringify(products, null, 4); 
-            const preEl = document.getElementById('exported-products-data');
+            
+            // ایجاد یک آبجکت شامل تمام داده‌های حیاتی برای آپلود
+            const fullData = {
+                products: products,
+                categories: categories, // categories is implicitly synced via products
+                users: users, 
+                orders: orders
+            };
+            
+            const data = JSON.stringify(fullData, null, 4); 
+            const preEl = document.getElementById('exported-data'); 
             preEl.innerText = data;
             preEl.style.display = 'block';
-            alert('✅ محصولات در کادر زیر نمایش داده شد. آن را کپی کرده و در کد خود جایگزین آرایه defaultProducts کنید تا کاربران جدید نیز آن را ببینند.');
+            alert('✅ لیست کامل داده‌ها (محصولات، کاربران، سفارش‌ها) در کادر زیر نمایش داده شد. محتوای این کادر را کپی کرده و در فایل JSON خارجی خود جایگزین کنید تا همگام‌سازی نهایی شود.');
         }
 
         function render() {
@@ -544,9 +611,10 @@ saveEditedProduct(this.dataset.productId);">
             updateShippingFormTotal();
         }
 
+        // ... [بقیه توابع بدون تغییر] ...
+
         function updateAuthArea() {
             const authArea = document.getElementById('user-auth-area');
-            // چک کردن currentUser. اگر رشته خالی "" باشد، false خواهد شد.
             if (currentUser) {
                 const displayName = isAdminLoggedIn ? 'ادمین' : currentUser;
                 authArea.innerHTML = `
@@ -627,12 +695,12 @@ saveEditedProduct(this.dataset.productId);">
                 return;
             }
 
-            // رمز ثبت نام شده را هش می‌کنیم
             users.push({username: u, password: hashPassword(p)});
             currentUser = u;
             isAdminLoggedIn = false;
             saveData();
             switchTab('shop');
+            alert('✅ ثبت نام موفق. برای همگام‌سازی نهایی، ادمین باید داده‌ها را روی لینک خارجی آپلود کند.');
         }
 
         function handleUserLogin(e) {
@@ -640,7 +708,6 @@ saveEditedProduct(this.dataset.productId);">
             const u = document.getElementById('user-login-username').value.trim();
             const p = document.getElementById('user-login-password').value;
             
-            // رمز وارد شده را هش کرده و با هش ذخیره شده مقایسه می‌کنیم
             const hashedP = hashPassword(p);
             const user = users.find(x => x.username===u && x.password===hashedP);
             
@@ -671,7 +738,6 @@ saveEditedProduct(this.dataset.productId);">
 
         // --- PASSWORD MGMT ---
         function getUserPassword(username) {
-            // برای نمایش در پروفایل، رمز هش شده را نشان می‌دهیم
             return users.find(u => u.username === username)?.password || '---';
         }
 
@@ -679,7 +745,6 @@ saveEditedProduct(this.dataset.productId);">
             if (!isAdminLoggedIn) return alert('دسترسی رد شد.');
             document.getElementById('target-username-display').innerText = username;
             document.getElementById('target-username-input').value = username;
-            // رمز هش شده را نمایش می‌دهیم
             document.getElementById('current-user-password-display').innerText = getUserPassword(username);
             document.getElementById('user-password-error').innerText = '';
             document.getElementById('new-user-password').value = '';
@@ -705,10 +770,9 @@ saveEditedProduct(this.dataset.productId);">
 
             const idx = users.findIndex(u => u.username === username);
             if (idx !== -1) {
-                // رمز جدید را هش کرده و ذخیره می‌کنیم
                 users[idx].password = hashPassword(newPass);
                 saveData();
-                alert('✅ رمز تغییر کرد.');
+                alert('✅ رمز تغییر کرد. برای همگام‌سازی، ادمین باید داده‌ها را روی لینک خارجی آپلود کند.');
                 closeModal('user-password-modal');
                 renderAdminUsers();
             }
@@ -731,10 +795,9 @@ saveEditedProduct(this.dataset.productId);">
 
             const idx = users.findIndex(u => u.username === ADMIN_RESERVED_USERNAME);
             if (idx !== -1) {
-                 // رمز جدید را هش کرده و ذخیره می‌کنیم
                 users[idx].password = hashPassword(newPass);
                 saveData();
-                alert('✅ رمز ادمین تغییر کرد.');
+                alert('✅ رمز ادمین تغییر کرد. برای همگام‌سازی، ادمین باید داده‌ها را روی لینک خارجی آپلود کند.');
                 closeModal('admin-password-modal');
             }
         }
@@ -809,7 +872,7 @@ saveEditedProduct(this.dataset.productId);">
         function calculateCartTotals() {
             const itemTotal = cart.reduce((sum, c) => {
                 const p = products.find(x => x.id === c.id);
-                return sum + (p ? (p.off || p.price) : 0) * (c.qty || 1); // Assuming quantity 1 if not specified
+                return sum + (p ? (p.off || p.price) : 0) * (c.qty || 1); 
             }, 0);
             return { itemTotal, finalTotal: itemTotal + (itemTotal > 0 ? SHIPPING_COST : 0) };
         }
@@ -884,7 +947,7 @@ saveEditedProduct(this.dataset.productId);">
             lastShippingInfo[currentUser] = shippingInfo;
             cart = [];
             saveData();
-            alert(`✅ سفارش شما با موفقیت ثبت شد. مبلغ ${finalTotal.toLocaleString()} تومان به زودی بررسی خواهد شد.`);
+            alert(`✅ سفارش شما با موفقیت ثبت شد. برای همگام‌سازی نهایی و نمایش سفارش روی دستگاه‌های دیگر، ادمین باید داده‌ها را روی لینک خارجی آپلود کند.`);
             switchTab('user-orders');
         }
 
@@ -895,14 +958,12 @@ saveEditedProduct(this.dataset.productId);">
 
             const userInfo = users.find(u => u.username === currentUser);
             
-            // اصلاحیه برای رفع خطای Uncaught TypeError
             if (!userInfo) {
                 profileEl.innerHTML = '<p style="text-align:center; color: var(--danger);">اطلاعات کاربری یافت نشد.</p>';
                 return; 
             }
 
             const shipping = lastShippingInfo[currentUser];
-            // برای امنیت، رمز هش شده را نشان می‌دهیم
             const maskedPassword = userInfo.password.substring(0, 4) + '...';
 
             let html = `<div class="profile-info-box">
@@ -940,7 +1001,7 @@ saveEditedProduct(this.dataset.productId);">
             listEl.innerHTML = list.length ? list.map(o => {
                 const statusColor = o.status === 'تکمیل شده' ? 'var(--success)' : 
                                     o.status === 'لغو شده' ? '#e74c3c' : 
-                                    o.status === 'در انتظار پرداخت' ? 'var(--danger)' : '#f1c40f';
+                                    o.status === 'در انتظار تایید' ? '#f1c40f' : 'var(--danger)'; // Updated status color
 
                 const addressDetails = o.shipping_info ? 
                     `<p>گیرنده: ${o.shipping_info.name} | تماس: ${o.shipping_info.phone}</p><p>آدرس: ${o.shipping_info.address}</p>` : '';
@@ -982,9 +1043,11 @@ saveEditedProduct(this.dataset.productId);">
             };
 
             products.push(newProduct);
+            if(!categories.includes(newProduct.category)) categories.push(newProduct.category);
+
             saveData();
             e.target.reset();
-            alert('✅ محصول جدید اضافه شد.');
+            alert('✅ محصول جدید به صورت محلی اضافه شد. برای همگام‌سازی، محتوای JSON را در پنل ادمین کپی و در لینک خارجی جایگزین کنید.');
         }
 
         function delProd(id) {
@@ -1041,9 +1104,10 @@ saveEditedProduct(this.dataset.productId);">
                 document.getElementById('edit-p-specs3').value.trim()
             ].filter(s => s).join(', ');
             product.specs = specs;
+            if(!categories.includes(product.category)) categories.push(product.category);
 
             saveData();
-            alert('✅ محصول ویرایش شد.');
+            alert('✅ محصول ویرایش شد. برای همگام‌سازی، محتوای JSON را در پنل ادمین کپی و در لینک خارجی جایگزین کنید.');
             closeModal('edit-modal');
         }
 
@@ -1084,7 +1148,7 @@ saveEditedProduct(this.dataset.productId);">
                 filteredOrders.map(o => {
                     const statusColor = o.status === 'تکمیل شده' ? 'var(--success)' : 
                                         o.status === 'لغو شده' ? '#e74c3c' : 
-                                        o.status === 'در انتظار پرداخت' ? 'var(--danger)' : '#f1c40f';
+                                        o.status === 'در انتظار تایید' ? '#f1c40f' : '#3498db';
 
                     const addressDetails = o.shipping_info ? 
                         `<p>گیرنده: ${o.shipping_info.name} | تماس: ${o.shipping_info.phone}</p><p>آدرس: ${o.shipping_info.address} پلاک ${o.shipping_info.plaque} کدپستی ${o.shipping_info.postal}</p>` : '';
@@ -1169,7 +1233,7 @@ saveEditedProduct(this.dataset.productId);">
         }
         
         // --- INITIALIZATION ---
-        render();
+        init(); 
         window.onclick = function(event) {
             if (!event.target.matches('.user-menu-container button')) {
                 const dropdowns = document.getElementsByClassName("user-dropdown");
