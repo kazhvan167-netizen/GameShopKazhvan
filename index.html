@@ -370,16 +370,17 @@ margin: 20px 0;">
 
             <div id="admin-users" class="admin-tab-content">
                 <div class="form-box" style="max-width: none; margin-bottom: 20px; border-color: var(--warning);">
-                    <h4 style="color: var(--warning); text-align: center;">⚙️ دستورالعمل نهایی همگام‌سازی تمام داده‌ها</h4>
+                    <h4 style="color: var(--warning); text-align: center;">⚙️ ابزار همگام‌سازی نهایی (ضروری)</h4>
                     <p style="font-size: 0.9em; text-align: right; color: #ccc; direction:rtl;">
-                        این تنها راه برای **ذخیره سفارشات جدید، کاربران جدید و محصولات جدید** روی دستگاه‌های دیگر است.
-                        <br><br>
-                        ۱. پس از ثبت هرگونه تغییر (سفارش، کاربر، محصول)، دکمه زیر را بزنید.
-                        <br>
-                        ۲. محتوای JSON کامل را کپی کرده و در فایل JSON خارجی خود (مثلاً در یک GitHub Gist) جایگزین کنید.
+                        از آنجا که سروری وجود ندارد، برای ذخیره **سفارشات، کاربران و محصولات جدید** و نمایش آن‌ها روی دستگاه‌های دیگر، باید این مراحل را به صورت **دستی** انجام دهید:
                     </p>
+                    <ol style="font-size: 0.9em; color: #ccc; direction:rtl; text-align:right; margin-right: 20px;">
+                        <li>دکمه زیر را بزنید تا خروجی JSON نهایی آماده شود.</li>
+                        <li>محتوای JSON را کپی کنید.</li>
+                        <li>محتوای فایل JSON خارجی (مثل Gist) خود را با این متن جایگزین کنید و ذخیره نمایید.</li>
+                    </ol>
                     <button class="btn btn-admin-action" style="background-color: var(--warning); color: #000; margin-bottom: 15px;" onclick="exportAllData()">
-                        نمایش کل داده‌ها برای همگام‌سازی نهایی
+                        نمایش کل داده‌ها برای کپی و جایگزینی
                     </button>
                     <pre id="exported-data" style="white-space: pre-wrap; word-wrap: break-word; background: #000; padding: 10px; border: 1px dashed #fff; border-radius: 5px; max-height: 200px; overflow-y: auto; text-align: left; direction: ltr; display: none; font-size: 0.8em;"></pre>
                 </div>
@@ -523,7 +524,7 @@ saveEditedProduct(this.dataset.productId);">
             localStorage.setItem('gs_isAdmin', isAdminLoggedIn);
             localStorage.setItem('gs_lastShippingInfo', JSON.stringify(lastShippingInfo));
 
-            if (window.dataLoaded) render();
+            if (window.dataLoaded) render(); // re-render after saving local changes
         }
         
         // --- ASYNC INITIALIZATION FUNCTION (Automatic Read Sync for All Data) ---
@@ -539,6 +540,7 @@ saveEditedProduct(this.dataset.productId);">
 
             // 2. Try to fetch the latest public data from the external URL
             try {
+                // Use a no-cache header to ensure we get the latest version of the JSON file
                 const response = await fetch(EXTERNAL_DATA_URL, { cache: "no-cache" });
                 if (!response.ok) throw new Error("Could not fetch external data.");
                 const externalData = await response.json();
@@ -553,6 +555,7 @@ saveEditedProduct(this.dataset.productId);">
                     // Merge admin account if missing (security precaution)
                     const externalAdmin = externalData.users.find(u => u.username === ADMIN_RESERVED_USERNAME);
                     if (!externalAdmin) {
+                        // Keep local admin if it was the initial one, otherwise merge external users
                         users = initialUsers.concat(externalData.users.filter(u => u.username !== ADMIN_RESERVED_USERNAME));
                     } else {
                         users = externalData.users;
@@ -611,8 +614,6 @@ saveEditedProduct(this.dataset.productId);">
             updateShippingFormTotal();
         }
 
-        // ... [بقیه توابع بدون تغییر] ...
-
         function updateAuthArea() {
             const authArea = document.getElementById('user-auth-area');
             if (currentUser) {
@@ -645,6 +646,12 @@ saveEditedProduct(this.dataset.productId);">
 
         function switchTab(t) {
             if (t === 'admin' && !isAdminLoggedIn) return alert('فقط ادمین!');
+            
+            // Re-run init() to grab the latest data from the external source every time a tab is switched
+            if (t !== 'login' && t !== 'register') {
+                init(); 
+            }
+
             document.querySelectorAll('.section').forEach(e=>e.classList.remove('active'));
             document.getElementById(t).classList.add('active');
             document.querySelectorAll('nav button').forEach(e=>e.classList.remove('active'));
@@ -1233,7 +1240,8 @@ saveEditedProduct(this.dataset.productId);">
         }
         
         // --- INITIALIZATION ---
-        init(); 
+        init(); // Start the first automatic read sync immediately
+
         window.onclick = function(event) {
             if (!event.target.matches('.user-menu-container button')) {
                 const dropdowns = document.getElementsByClassName("user-dropdown");
