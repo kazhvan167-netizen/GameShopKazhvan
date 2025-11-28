@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -366,8 +366,15 @@ margin: 20px 0;">
             </div>
 
             <div id="admin-users" class="admin-tab-content">
-         
- <h3 style="color:var(--secondary); text-align: right;
+                <div class="form-box" style="max-width: none; margin-bottom: 20px; border-color: var(--warning);">
+                    <h4 style="color: var(--warning); text-align: center;">⚙️ ابزار همگام‌سازی دستی (Manual Sync Tool)</h4>
+                    <p style="font-size: 0.9em; text-align: center; color: #ccc;">(تنها راه بدون سرور برای انتقال محصولات جدید)</p>
+                    <button class="btn btn-admin-action" style="background-color: var(--warning); color: #000; margin-bottom: 15px;" onclick="exportProductsData()">
+                        نمایش محصولات برای جایگزینی
+                    </button>
+                    <pre id="exported-products-data" style="white-space: pre-wrap; word-wrap: break-word; background: #000; padding: 10px; border: 1px dashed #fff; border-radius: 5px; max-height: 200px; overflow-y: auto; text-align: left; direction: ltr; display: none; font-size: 0.8em;"></pre>
+                </div>
+                <h3 style="color:var(--secondary); text-align: right;
 margin-bottom: 15px;">لیست کاربران</h3>
                 <div class="search-container">
                     <input type="text" id="user-search-input" oninput="renderAdminUsers()" placeholder="جستجو نام کاربری..." />
@@ -447,6 +454,7 @@ saveEditedProduct(this.dataset.productId);">
         const SHIPPING_COST = 100000;
 
         // --- DATA ---
+        // این آرایه باید به صورت دستی توسط ادمین به‌روز شود (با استفاده از ابزار جدید در پنل ادمین)
         const defaultProducts = [
             { id: 1, name: "کنسول PS5", price: 28000000, off: 26500000, img: "https://via.placeholder.com/300/4e5458/ffffff?text=PS5", category: "کنسول", specs: "حافظه: 1 ترابایت, رنگ: سفید, گارانتی: 12 ماهه" },
             { id: 2, name: "دسته ایکس باکس", price: 3500000, off: null, img: "https://via.placeholder.com/300/4e5458/ffffff?text=XBOX", category: "لوازم جانبی", specs: "رنگ: مشکی, سنسور: شتاب سنج" },
@@ -511,6 +519,17 @@ saveEditedProduct(this.dataset.productId);">
             render();
         }
         
+        // --- NEW FUNCTION FOR MANUAL SYNC ---
+        function exportProductsData() {
+            if (!isAdminLoggedIn) return alert('دسترسی رد شد.');
+            // استخراج آرایه محصولات به صورت JSON زیبا برای جایگزینی آسان در کد
+            const data = JSON.stringify(products, null, 4); 
+            const preEl = document.getElementById('exported-products-data');
+            preEl.innerText = data;
+            preEl.style.display = 'block';
+            alert('✅ محصولات در کادر زیر نمایش داده شد. آن را کپی کرده و در کد خود جایگزین آرایه defaultProducts کنید تا کاربران جدید نیز آن را ببینند.');
+        }
+
         function render() {
             renderShop();
             renderAdminProducts();
